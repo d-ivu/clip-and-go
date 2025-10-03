@@ -149,6 +149,13 @@ const { data: subData, error } = await supabase
             href="/bookings"
             className="block w-full bg-gray-100 text-gray-700 text-center py-3 rounded-md hover:bg-gray-200"
           >
+            View Bookings
+          </Link>
+
+          <Link
+            href="/manage-subscription"
+            className="block w-full bg-gray-100 text-gray-700 text-center py-3 rounded-md hover:bg-gray-200"
+          >
             View My Bookings
           </Link>
           

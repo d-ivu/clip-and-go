@@ -89,6 +89,18 @@ export default function Book() {
 
       if (error) throw error
 
+      // Send booking confirmation email
+      await fetch('/api/send-booking-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: user.email,
+          shopName: shops.find(s => s.id === parseInt(selectedShop))?.name,
+          date: selectedDate,
+          time: selectedTime
+        })
+      })
+
       alert('Booking successful! ✅')
       router.push('/bookings')
     } catch (error) {

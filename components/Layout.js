@@ -45,6 +45,9 @@ export default function Layout({ children, title = 'Clip & Go' }) {
               <Link href="/shops" className="text-gray-600 hover:text-primary-600">
                 Shops
               </Link>
+              <Link href="/barbers" className="text-gray-600 hover:text-primary-600">
+  Barbers
+</Link>
               
               {user ? (
   <>

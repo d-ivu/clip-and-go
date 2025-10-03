@@ -153,6 +153,14 @@ export default function Bookings() {
                     Cancel Booking
                   </button>
                 )}
+                {booking.status === 'completed' && (
+  <Link
+    href={`/review/${booking.id}`}
+    className="text-primary-600 hover:text-primary-700 text-sm"
+  >
+    Leave a Review
+  </Link>
+)}
               </div>
             ))}
           </div>
