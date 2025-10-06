@@ -129,6 +129,14 @@ const { data: subData, error } = await supabase
                   Book Appointment
                 </Link>
               </div>
+              <div className="mt-2">
+  <Link
+    href="/manage-subscription"
+    className="block w-full bg-gray-100 text-gray-700 text-center py-2 rounded-md hover:bg-gray-200"
+  >
+    Manage Subscription
+  </Link>
+</div>
             </div>
           ) : (
             <div className="text-center py-4">
