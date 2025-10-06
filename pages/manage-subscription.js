@@ -37,56 +37,61 @@ export default function ManageSubscription() {
   }
 
   const handleCancelSubscription = async () => {
-    if (!confirm('Are you sure you want to cancel? You can still use bookings until the end of your billing period.')) {
-      return
-    }
-
-    setProcessing(true)
-
-    try {
-      const { error } = await supabase
-        .from('subscriptions')
-        .update({ status: 'cancelled' })
-        .eq('id', subscription.id)
-
-      if (error) throw error
-
-      alert('Subscription cancelled. You can use remaining bookings until end of billing period.')
-      router.push('/profile')
-    } catch (error) {
-      alert('Error: ' + error.message)
-    } finally {
-      setProcessing(false)
-    }
+  if (!confirm('Are you sure you want to cancel? You can still use bookings until the end of your billing period.')) {
+    return
   }
+
+  setProcessing(true)
+
+  try {
+    const { error } = await supabase
+      .from('subscriptions')
+      .update({ status: 'cancelled' })
+      .eq('id', subscription.id)
+
+    if (error) throw error
+
+    alert('✅ Subscription cancelled successfully. Redirecting...')
+    
+    // Wait 1 second then redirect
+    setTimeout(() => {
+      router.push('/profile')
+    }, 1000)
+  } catch (error) {
+    alert('Error: ' + error.message)
+    setProcessing(false)
+  }
+}
 
   const handlePauseSubscription = async () => {
-    if (!confirm('Pause subscription for 30 days? Billing will resume automatically after 30 days.')) return
+  if (!confirm('Pause subscription for 30 days? Billing will resume automatically after 30 days.')) return
 
-    setProcessing(true)
+  setProcessing(true)
 
-    try {
-      const pauseUntil = new Date()
-      pauseUntil.setDate(pauseUntil.getDate() + 30)
+  try {
+    const pauseUntil = new Date()
+    pauseUntil.setDate(pauseUntil.getDate() + 30)
 
-      const { error } = await supabase
-        .from('subscriptions')
-        .update({ 
-          status: 'paused',
-          paused_until: pauseUntil.toISOString()
-        })
-        .eq('id', subscription.id)
+    const { error } = await supabase
+      .from('subscriptions')
+      .update({ 
+        status: 'paused',
+        paused_until: pauseUntil.toISOString()
+      })
+      .eq('id', subscription.id)
 
-      if (error) throw error
+    if (error) throw error
 
-      alert('Subscription paused for 30 days')
-      loadData()
-    } catch (error) {
-      alert('Error: ' + error.message)
-    } finally {
-      setProcessing(false)
-    }
+    alert('✅ Subscription paused for 30 days')
+    
+    // Reload the data to show updated status
+    await loadData()
+  } catch (error) {
+    alert('Error: ' + error.message)
+  } finally {
+    setProcessing(false)
   }
+}
 
   const handleChangePlan = async (newPlanId) => {
     const newPlan = SUBSCRIPTION_PLANS.find(p => p.id === newPlanId)

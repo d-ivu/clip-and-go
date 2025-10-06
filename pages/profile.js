@@ -16,42 +16,38 @@ export default function Profile() {
   }, [])
 
   const getUserData = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        router.push('/login')
-        return
-      }
-
-      console.log('User ID:', user.id)
-      setUser(user)
-
-      // Get subscription
-const { data: subData, error } = await supabase
-  .from('subscriptions')
-  .select('*')
-  .eq('user_id', user.id)
-  .eq('status', 'active')
-  .order('created_at', { ascending: false })
-  .limit(1)
-  .maybeSingle()
-
-      console.log('Subscription data:', subData)
-      console.log('Subscription error:', error)
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching subscription:', error)
-      }
-
-      setSubscription(subData)
-    } catch (error) {
-      console.error('Error:', error)
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
       router.push('/login')
-    } finally {
-      setLoading(false)
+      return
     }
+
+    setUser(user)
+
+    // Get subscription - don't use .single() to avoid errors
+    const { data: subData, error } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', user.id)
+      .in('status', ['active', 'paused']) // Check for both active and paused
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching subscription:', error)
+    }
+
+    // Get the first subscription or null
+    setSubscription(subData && subData.length > 0 ? subData[0] : null)
+  } catch (error) {
+    console.error('Error:', error)
+    router.push('/login')
+  } finally {
+    setLoading(false)
   }
+}
 
   const handleLogout = async () => {
     await supabase.auth.signOut()

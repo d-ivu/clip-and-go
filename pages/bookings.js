@@ -60,26 +60,28 @@ export default function Bookings() {
   }
 
   const handleCancelBooking = async (bookingId) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) {
-      return
-    }
-
-    try {
-      const { error } = await supabase
-        .from('bookings')
-        .update({ status: 'cancelled' })
-        .eq('id', bookingId)
-        .eq('user_id', user.id)
-
-      if (error) throw error
-
-      alert('Booking cancelled successfully')
-      fetchBookings(user.id)
-    } catch (error) {
-      console.error('Error cancelling booking:', error)
-      alert('Failed to cancel booking')
-    }
+  if (!confirm('Are you sure you want to cancel this booking?')) {
+    return
   }
+
+  try {
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: 'cancelled' })
+      .eq('id', bookingId)
+      .eq('user_id', user.id)
+
+    if (error) throw error
+
+    alert('✅ Booking cancelled successfully')
+    
+    // Refresh the bookings list
+    await getUserAndBookings()
+  } catch (error) {
+    console.error('Error cancelling booking:', error)
+    alert('Failed to cancel booking: ' + error.message)
+  }
+}
 
   const getShopName = (shopId) => {
     const shop = shops.find(s => s.id === shopId)

@@ -89,22 +89,24 @@ export default function AdminDashboard() {
   }
 
   const handleBookingStatusChange = async (bookingId, newStatus) => {
-    try {
-      const { error } = await supabase
-        .from('bookings')
-        .update({ status: newStatus })
-        .eq('id', bookingId)
-        .eq('shop_id', admin.shopId)
+  try {
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: newStatus })
+      .eq('id', bookingId)
+      .eq('shop_id', admin.shopId)
 
-      if (error) throw error
+    if (error) throw error
 
-      alert('Booking status updated!')
-      loadDashboardData(admin.shopId)
-    } catch (error) {
-      console.error('Error updating booking:', error)
-      alert('Failed to update booking')
-    }
+    alert('✅ Booking status updated to: ' + newStatus)
+    
+    // Reload dashboard data
+    await loadDashboardData(admin.shopId)
+  } catch (error) {
+    console.error('Error updating booking:', error)
+    alert('Failed to update booking: ' + error.message)
   }
+}
 
   if (loading) {
     return (
