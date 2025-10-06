@@ -75,8 +75,8 @@ export default function Bookings() {
 
     alert('✅ Booking cancelled successfully')
     
-    // Refresh the bookings list
-    await getUserAndBookings()
+    // Refresh the bookings - use correct function name
+    await checkUserAndFetchBookings()
   } catch (error) {
     console.error('Error cancelling booking:', error)
     alert('Failed to cancel booking: ' + error.message)

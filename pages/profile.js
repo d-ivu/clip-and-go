@@ -15,39 +15,49 @@ export default function Profile() {
     getUserData()
   }, [])
 
-  const getUserData = async () => {
-  try {
-    const { data: { user } } = await supabase.auth.getUser()
+  // This runs when the page comes into focus (after returning from manage-subscription)
+  useEffect(() => {
+    const handleFocus = () => {
+      getUserData()
+    }
     
-    if (!user) {
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [])
+
+  const getUserData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      setUser(user)
+
+      // Get subscription - fetch all and take first (handles no results gracefully)
+      const { data: subs, error } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching subscription:', error)
+      }
+
+      // Find active or paused subscription
+      const activeSub = subs?.find(s => s.status === 'active' || s.status === 'paused')
+      setSubscription(activeSub || null)
+
+    } catch (error) {
+      console.error('Error:', error)
       router.push('/login')
-      return
+    } finally {
+      setLoading(false)
     }
-
-    setUser(user)
-
-    // Get subscription - don't use .single() to avoid errors
-    const { data: subData, error } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', user.id)
-      .in('status', ['active', 'paused']) // Check for both active and paused
-      .order('created_at', { ascending: false })
-      .limit(1)
-
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error fetching subscription:', error)
-    }
-
-    // Get the first subscription or null
-    setSubscription(subData && subData.length > 0 ? subData[0] : null)
-  } catch (error) {
-    console.error('Error:', error)
-    router.push('/login')
-  } finally {
-    setLoading(false)
   }
-}
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -97,8 +107,14 @@ export default function Profile() {
           {subscription ? (
             <div>
               <div className="flex items-center mb-4">
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
-                  ACTIVE
+                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                  subscription.status === 'active' 
+                    ? 'bg-green-100 text-green-800'
+                    : subscription.status === 'paused'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {subscription.status.toUpperCase()}
                 </span>
               </div>
               
@@ -117,22 +133,45 @@ export default function Profile() {
                 </div>
               </div>
 
-              <div className="mt-4">
-                <Link
-                  href="/book"
-                  className="block w-full bg-primary-500 text-white text-center py-2 rounded-md hover:bg-primary-600"
-                >
-                  Book Appointment
-                </Link>
-              </div>
-              <div className="mt-2">
-  <Link
-    href="/manage-subscription"
-    className="block w-full bg-gray-100 text-gray-700 text-center py-2 rounded-md hover:bg-gray-200"
-  >
-    Manage Subscription
-  </Link>
-</div>
+              {subscription.status === 'paused' && subscription.paused_until && (
+                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                  <p className="text-sm text-yellow-800">
+                    ⏸️ Paused until {new Date(subscription.paused_until).toLocaleDateString()}
+                  </p>
+                </div>
+              )}
+
+              {subscription.status === 'active' && (
+                <>
+                  <div className="mt-4">
+                    <Link
+                      href="/book"
+                      className="block w-full bg-primary-500 text-white text-center py-2 rounded-md hover:bg-primary-600"
+                    >
+                      Book Appointment
+                    </Link>
+                  </div>
+                  <div className="mt-2">
+                    <Link
+                      href="/manage-subscription"
+                      className="block w-full bg-gray-100 text-gray-700 text-center py-2 rounded-md hover:bg-gray-200"
+                    >
+                      Manage Subscription
+                    </Link>
+                  </div>
+                </>
+              )}
+
+              {subscription.status === 'paused' && (
+                <div className="mt-4">
+                  <Link
+                    href="/manage-subscription"
+                    className="block w-full bg-yellow-500 text-white text-center py-2 rounded-md hover:bg-yellow-600"
+                  >
+                    View Paused Subscription
+                  </Link>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-4">
@@ -151,13 +190,6 @@ export default function Profile() {
         <div className="space-y-3">
           <Link
             href="/bookings"
-            className="block w-full bg-gray-100 text-gray-700 text-center py-3 rounded-md hover:bg-gray-200"
-          >
-            View Bookings
-          </Link>
-
-          <Link
-            href="/manage-subscription"
             className="block w-full bg-gray-100 text-gray-700 text-center py-3 rounded-md hover:bg-gray-200"
           >
             View My Bookings

@@ -51,12 +51,10 @@ export default function ManageSubscription() {
 
     if (error) throw error
 
-    alert('✅ Subscription cancelled successfully. Redirecting...')
+    alert('✅ Subscription cancelled successfully')
     
-    // Wait 1 second then redirect
-    setTimeout(() => {
-      router.push('/profile')
-    }, 1000)
+    // Force redirect with page reload
+    window.location.href = '/profile'
   } catch (error) {
     alert('Error: ' + error.message)
     setProcessing(false)
@@ -84,11 +82,10 @@ export default function ManageSubscription() {
 
     alert('✅ Subscription paused for 30 days')
     
-    // Reload the data to show updated status
-    await loadData()
+    // Force redirect with page reload
+    window.location.href = '/profile'
   } catch (error) {
     alert('Error: ' + error.message)
-  } finally {
     setProcessing(false)
   }
 }
